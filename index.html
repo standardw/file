@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #maze {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 1px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            box-sizing: border-box;
+        }
+
+        .start {
+            background-color: #00f;
+        }
+
+        .end {
+            background-color: #0f0;
+        }
+
+        .player {
+            background-color: #f00;
+        }
+
+        .obstacle {
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="maze"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const maze = document.getElementById("maze");
+            const startCell = { row: 0, col: 0 };
+            const endCell = { row: 9, col: 9 };
+            const playerCell = { ...startCell };
+            const obstacles = createObstacles();
+
+            function createObstacles() {
+                const obstacles = [];
+                for (let i = 0; i < 20; i++) {  // 20개의 장애물을 랜덤하게 생성
+                    const obstacle = {
+                        row: Math.floor(Math.random() * 10),
+                        col: Math.floor(Math.random() * 10)
+                    };
+                    obstacles.push(obstacle);
+                }
+                return obstacles;
+            }
+
+            function createMaze() {
+                for (let row = 0; row < 10; row++) {
+                    for (let col = 0; col < 10; col++) {
+                        const cell = document.createElement("div");
+                        cell.classList.add("cell");
+                        if (row === startCell.row && col === startCell.col) {
+                            cell.classList.add("start");
+                        } else if (row === endCell.row && col === endCell.col) {
+                            cell.classList.add("end");
+                        } else if (obstacleAt(row, col)) {
+                            cell.classList.add("obstacle");
+                        }
+                        maze.appendChild(cell);
+                    }
+                }
+            }
+
+            function obstacleAt(row, col) {
+                return obstacles.some(obstacle => obstacle.row === row && obstacle.col === col);
+            }
+
+            function updatePlayerPosition() {
+                const cells = document.querySelectorAll(".cell");
+                cells.forEach((cell) => cell.classList.remove("player"));
+                const index = playerCell.row * 10 + playerCell.col;
+                cells[index].classList.add("player");
+            }
+
+            function movePlayer(event) {
+                const newPlayerCell = { ...playerCell };
+                switch (event.key) {
+                    case "ArrowUp":
+                        newPlayerCell.row = Math.max(0, playerCell.row - 1);
+                        break;
+                    case "ArrowDown":
+                        newPlayerCell.row = Math.min(9, playerCell.row + 1);
+                        break;
+                    case "ArrowLeft":
+                        newPlayerCell.col = Math.max(0, playerCell.col - 1);
+                        break;
+                    case "ArrowRight":
+                        newPlayerCell.col = Math.min(9, playerCell.col + 1);
+                        break;
+                    default:
+                        return;
+                }
+
+                if (!obstacleAt(newPlayerCell.row, newPlayerCell.col)) {
+                    playerCell.row = newPlayerCell.row;
+                    playerCell.col = newPlayerCell.col;
+                }
+
+                updatePlayerPosition();
+                checkWin();
+            }
+
+            function checkWin() {
+                if (playerCell.row === endCell.row && playerCell.col === endCell.col) {
+                    alert("You won!");
+                    resetGame();
+                }
+            }
+
+            function resetGame() {
+                playerCell.row = startCell.row;
+                playerCell.col = startCell.col;
+                updatePlayerPosition();
+            }
+
+            createMaze();
+            updatePlayerPosition();
+
+            document.addEventListener("keydown", movePlayer);
+        });
+    </script>
+</body>
+</html>
